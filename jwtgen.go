@@ -81,7 +81,13 @@ func main() {
 	flag.Parse()
 
 	// Generate a token out of all of our claims, optionally print them.
-	claims := generateToken()
+	claims, err := generateToken()
+
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		os.Exit(1)
+	}
+
 	if *flagDebug {
 		var jsonClaims []byte
 		var err error
@@ -98,11 +104,12 @@ func main() {
 
 	// Sign and print!
 	if err := signToken(claims); err != nil {
-		fmt.Println("Error ", err)
+		fmt.Println("ERROR:", err)
+		os.Exit(1)
 	}
 }
 
-func generateToken() payload {
+func generateToken() (payload, error) {
 	// Generate an expiration based on whether or not this token should
 	// be expired.
 	var expiration int64
@@ -112,9 +119,23 @@ func generateToken() payload {
 		expiration = time.Now().UTC().Unix() + 100000000 // Plus two years
 	}
 
+	var errorValue string
+	if *flagError != "" {
+		validErrors := []string{"invalid_request", "invalid_client", "invalid_grant", "unauthorized_client", "unsupported_grant_type", "invalid_scope"}
+		for _, errorString := range validErrors {
+			if *flagError == errorString {
+				errorValue = *flagError
+			}
+		}
+
+		if errorValue == "" {
+			return payload{}, fmt.Errorf("Provided error value \"%s\" not valid", *flagError)
+		}
+	}
+
 	return payload{
 		*flagEmail, // Email
-		*flagError, // Error message (optional)
+		errorValue, // Error message (optional)
 		"true",     // EmailVerified -- Apple sends this as a string instead of a bool
 		true,       // NonceSupported -- Alaways true as a bool
 		jwt.StandardClaims{
@@ -124,7 +145,7 @@ func generateToken() payload {
 			Subject:   *flagSubject,
 			IssuedAt:  time.Now().UTC().Unix(),
 		},
-	}
+	}, nil
 }
 
 func signToken(claims payload) error {
