@@ -10,7 +10,7 @@ go get github.com/coleaeason/jwtgen
 
 To use it:
 ```bash
-MacBook-Pro->coleaeason/jwtgen (master) > jwtgen --help
+$ jwtgen --help
 Usage of jwtgen
 Example usages:
   Generate a default, valid token:
