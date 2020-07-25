@@ -88,25 +88,27 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *flagDebug {
-		var jsonClaims []byte
-		var err error
-		if *flagPrettyPrint {
-			jsonClaims, err = json.MarshalIndent(claims, "", "    ")
-		} else {
-			jsonClaims, err = json.Marshal(claims)
-		}
-
-		if err == nil {
-			fmt.Println(string(jsonClaims))
-		}
-	}
-
 	// Sign and print!
 	if err := signToken(claims); err != nil {
 		fmt.Println("ERROR:", err)
 		os.Exit(1)
 	}
+}
+
+func printJSON(j interface{}) error {
+	var parsedJSON []byte
+	var err error
+	if *flagPrettyPrint {
+		parsedJSON, err = json.MarshalIndent(j, "", "    ")
+	} else {
+		parsedJSON, err = json.Marshal(j)
+	}
+
+	if err == nil {
+		fmt.Println(string(parsedJSON))
+	}
+
+	return err
 }
 
 func generateToken() (payload, error) {
@@ -156,18 +158,8 @@ func signToken(claims payload) error {
 
 	var err error
 	if *flagDebug {
-		var jsonHeader []byte
-		if *flagPrettyPrint {
-			jsonHeader, err = json.MarshalIndent(token.Header, "", "    ")
-		} else {
-			jsonHeader, err = json.Marshal(token.Header)
-		}
-
-		if err == nil {
-			fmt.Println(string(jsonHeader))
-		} else {
-			return fmt.Errorf("Error printing header: %v", err)
-		}
+		printJSON(token.Header)
+		printJSON(token.Claims)
 	}
 
 	key, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privKey))
