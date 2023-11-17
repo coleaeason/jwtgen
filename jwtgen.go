@@ -9,7 +9,7 @@ import (
 	"os"
 	"time"
 
-	jwt "github.com/golang-jwt/jwt/v4"
+	jwt "github.com/golang-jwt/jwt/v5"
 )
 
 // Globals
@@ -58,7 +58,7 @@ type payload struct {
 	Error          string `json:"err,omitempty"`
 	EmailVerified  string `json:"email_verified"`
 	NonceSupported bool   `json:"nonce_supported"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 func main() {
@@ -140,12 +140,12 @@ func generateToken() (payload, error) {
 		errorValue, // Error message (optional)
 		"true",     // EmailVerified -- Apple sends this as a string instead of a bool
 		true,       // NonceSupported -- Alaways true as a bool
-		jwt.StandardClaims{
-			ExpiresAt: expiration,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Unix(expiration, 0)),
 			Issuer:    *flagISS,
-			Audience:  *flagAUD,
+			Audience:  []string{*flagAUD},
 			Subject:   *flagSubject,
-			IssuedAt:  time.Now().UTC().Unix(),
+			IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
 		},
 	}, nil
 }
