@@ -1,4 +1,4 @@
-module github.com/coleaeason/jwtgen
+module github.com/coleaeason/jwtgen/v2
 
 go 1.21.0
 
