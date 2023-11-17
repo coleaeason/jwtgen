@@ -5,7 +5,7 @@ A simple program that generates JWTs, specifically ones that look like Apple Sig
 To install:
 
 ```bash
-go install github.com/coleaeason/jwtgen
+go install github.com/coleaeason/jwtgen@latest
 ```
 
 To use it:
